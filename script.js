@@ -1,10 +1,10 @@
 const buttons = document.querySelectorAll("button");
-const numbers = document.querySelectorAll(".number");
-const display = document.getElementsByClassName("display");
-const sums = document.querySelectorAll("sums");
-console.log(display[0].value);
-let s = false;
-// when clicking buttons
+const display = document.querySelector(".display");
+const operatorsArr = ["+", "-", "*", "/"];
+const numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+var lastresult;
+
+//clicking a button
 buttons.forEach((button) => {
   button.addEventListener("click", buttonClicked);
 });
@@ -12,13 +12,6 @@ buttons.forEach((button) => {
 // what happens when button clicked
 function buttonClicked(event) {
   const buttonValue = event.target.value;
-  let displayArr = display[0].value.split(" ");
-  console.log(displayArr);
-  // checking if there is 2 sums on row
-  // if (noTwoSums(displayArr)) {
-  //   alert("We don't do that here IDIOT !!!");
-  //   display.value = null;
-  // }
 
   // if the user want to clear the value
   if (buttonValue === "C") {
@@ -26,12 +19,8 @@ function buttonClicked(event) {
 
     // if the user want to get the result of the sum
   } else if (buttonValue === "=") {
-    if (display.value == null) {
-      display.value = 0;
-    } else {
-      display.value = results(display.value);
-      s = true;
-    }
+    display.value = results(display.value);
+    lastresult = results(display.value);
 
     // when the user still putting his equation
   } else {
@@ -39,11 +28,28 @@ function buttonClicked(event) {
       display.value = null;
     }
 
-    if (s) {
+    if (display.value == lastresult && numbers.includes(buttonValue)) {
       display.value = null;
-      s = false;
     }
+    // checking if there is 2 sums on row
     display.value += buttonValue;
+
+    // splitting the display
+    let displayArr = display.value.split(" ").filter((item) => item != "");
+
+    if (displayArr.length == 4) {
+      display.value = results(display.value) + buttonValue;
+    }
+    if (operatorsArr.includes(displayArr[0])) {
+      displayArr[1] = displayArr[0];
+      displayArr[0] = 0;
+      display.value = displayArr[0] + " " + displayArr[1] + " ";
+    }
+    if (checkingIfTwoOperatorsInRow(displayArr)) {
+      displayArr[1] = null;
+      displayArr[1] = displayArr[2];
+      display.value = displayArr[0] + " " + displayArr[1] + " ";
+    }
   }
 }
 
@@ -53,7 +59,10 @@ function results(screen) {
   let screenArr = screen.split(" ");
   let firstNumbers = Number(screenArr[0]);
   let secondNumbers = Number(screenArr[2]);
-
+  console.log(screenArr.length);
+  if (screenArr.length == 1) {
+    return screenArr[0];
+  }
   // checking for which Methods he want to use
   return doMathOperation(firstNumbers, secondNumbers, screenArr[1]);
 }
@@ -71,18 +80,13 @@ const doMathOperation = (num1, num2, operator) => {
   }
 };
 
-// function noTwoSums(displayArr) {
-//   for (let i = 0; i < 20; i++) {
-//     console.log(displayArr[i]);
-//     if (
-//       (displayArr[i] == displayArr[i - 1] && displayArr[i] == "+") ||
-//       displayArr[i] == "-" ||
-//       displayArr[i] == "*" ||
-//       displayArr[i] == "/"
-//     ) {
-//       return true;
-//     } else {
-//       return false;
-//     }
-//   }
-// }
+function checkingIfTwoOperatorsInRow(displayArr) {
+  for (let i = 0; i < displayArr.length; i++) {
+    if (
+      operatorsArr.includes(displayArr[i]) &&
+      operatorsArr.includes(displayArr[i - 1])
+    ) {
+      return true;
+    }
+  }
+}
